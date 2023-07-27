@@ -1,0 +1,23 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "==4.2"
+dj-database-url = "*"
+django-hosts = "*"
+requests = "*"
+django-environ = "*"
+urllib3 = "*"
+gunicorn = "*"
+libsass = "*"
+django-sass-processor = "*"
+django-compressor = "*"
+django-widget-tweaks = "*"
+mysqlclient = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.11.4"

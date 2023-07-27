@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "yangpt_aituber_app"
+version = "0.1.0"
+description = ""
+authors = ["lee"]
+readme = "README.md"
+packages = [{include = "yangpt_aituber_app"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

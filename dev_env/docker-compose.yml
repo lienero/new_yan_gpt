@@ -1,0 +1,49 @@
+version: '3.7'
+services:
+  proxy:
+    depends_on:
+      - env
+    volumes:
+      - ../:/app/work:cached
+    build:
+      context: ./nginx_build
+      args:
+        USER: ${USER}
+        UID: ${UID}
+    image: nginx:latest
+    container_name: yangpt_aituber_app-reverse-proxy
+    command: /usr/sbin/nginx -g 'daemon off;' -c /etc/nginx/nginx.conf
+  db:
+    image: mysql:8.0.33
+    command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci
+    environment:
+      MYSQL_DATABASE: yangpt_aituber_app_db
+      MYSQL_ROOT_PASSWORD: root
+      TZ: Asia/Seoul
+    volumes:
+      - mysql:/var/lib/mysql
+  env:
+    build:
+      context: env_build
+      args:
+        USER: ${USER}
+        UID: ${UID}
+    expose:
+      - 8000
+    environment:
+      DJANGO_ENV: development
+      DEBUG: 1
+      DATABASE_NAME: yangpt_aituber_app_db
+      DATABASE_HOST: db
+      DATABASE_USERNAME: root
+      DATABASE_PASSWORD: root
+    depends_on:
+      - db
+    command:
+      - tail
+      - -f
+      - /dev/null
+    volumes:
+      - ..:/app/work:cached
+volumes:
+  mysql:

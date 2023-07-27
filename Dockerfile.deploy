@@ -1,0 +1,33 @@
+FROM python:3.11.4
+ENV LANG C.UTF-8
+ENV TZ Asia/Seoul
+ENV PYTHONUNBUFFERED 1
+ENV PYTHONUTF8 1
+ENV HOME /app/work
+RUN apt update &&\
+    curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
+    apt install nodejs && \
+    apt install -y build-essential mariadb-client default-libmysqlclient-dev && \
+    apt install -y curl apt-transport-https wget && \
+    apt-get update && apt-get install -y vim && \
+    mkdir -p /app/shared
+
+WORKDIR /app/work/
+COPY . ./
+
+RUN pip install --upgrade pip &&\
+    pip install pipenv
+
+RUN pipenv install --dev --system &&\
+    pip install --upgrade -e . && \
+    cp -r public /app/shared/www && \
+    cp -r static /app/shared/static && \
+    cp nginx.conf /app/shared/ && \
+    cp nginx_default.conf /app/shared/ && \
+    chmod -R 777 src
+
+EXPOSE 8000
+
+VOLUME "/app/shared"
+
+CMD ["bash", "-c", "gunicorn --bind 0.0.0.0:8000 config.wsgi:application"]
