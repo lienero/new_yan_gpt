@@ -16,7 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from yangpt_aituber_app import views as yangpt_aituber_app
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', yangpt_aituber_app.YanGptAituberIV.as_view(), name='index'),
 ]
