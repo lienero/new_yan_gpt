@@ -1,0 +1,19 @@
+<html>
+
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>
+      {% block title %}YanGpt Aituber{% endblock %}
+    </title>
+    {% load static %}
+    {% load sass_tags %}
+    <link rel="stylesheet" type="text/css" href="{% sass_src 'css/common.scss' %}"/>
+    <script src="{% static 'js/application.js' %}"></script>
+  </head>
+
+  <body>
+    {% block content %}{% endblock %}
+    {% block extra-script %}{% endblock %}
+  </body>
+
+</html>
