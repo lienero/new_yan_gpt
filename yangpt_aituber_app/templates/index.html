@@ -15,9 +15,13 @@
   </div>
   <div id="question-box">
     <h2 id="question-from-user">
-      test<br>
-      test<br>
-      test<br>
+      <form method="get" id="form" onsubmit="return false;">
+        아이디 :
+        <input type="text" name="" id="user"><br>
+        코멘트 :
+        <input type="text" name="" id="comment"><br>
+        <button id="send">전송</button>
+      </form>
     </h2>
   </div>
 {% endblock %}
