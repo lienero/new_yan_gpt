@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 음성 변환 API(VOICE VOX)
   const VOICE_VOX_API_URL = 'http://localhost:50021';
-  const VOICEVOX_SPEAKER_ID = '8';
+  const VOICEVOX_SPEAKER_ID = '63';
   let audio = new Audio();
 
   let speak_aituber = async (inputText) => {
@@ -478,7 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'く',
     'っ',
     'っ',
-    'ぷ',
+    '',
   ];
 
   const KR_WORD_CODE_FIRST = '가'.charCodeAt(0);

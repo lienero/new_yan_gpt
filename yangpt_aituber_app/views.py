@@ -47,8 +47,8 @@ class YanGptAituberRV(View):
             User.objects.create(name=user)
             response += f"처음뵙겠습니다. {user}기사님. 저는 로즈마리에요. 잘 부탁해요."
 
+        print(data.get('comment'))
         response += YanGpt.response(
             user, data.get('comment'))
         context = {'content': response}
-        print(data.get('comment'))
         return JsonResponse(context)
