@@ -28,11 +28,10 @@ class YanGptAituberRV(View):
             user_data = user_data.get()
             date_diff = (datetime.now().replace(
                 tzinfo=None) - user_data.updated_at.replace(tzinfo=None))
-            if date_diff.days > 1:
+            if date_diff.days >= 1:
                 user_data.ai_liked += 1
                 user_data.updated_at = datetime.now()
                 user_data.save()
-            print("업데이트")
             yan_event = YanGpt.yan_event(
                 user_data.ai_liked, user_data.yan_event_flag)
             common_event = YanGpt.common_event(

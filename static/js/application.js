@@ -43,16 +43,66 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     console.log(response);
     console.log(response.content);
-    const AITuberResponse = response.content;
+    const aituber_response = response.content;
     const target = document.getElementById('aituber-response');
-    target.innerHTML = AITuberResponse;
+    target.innerHTML = aituber_response;
 
     // 대답을 히라가나로 변환
-    const speak_response = korean_to_hiragana(AITuberResponse);
+    const speak_response = korean_to_hiragana(aituber_response);
 
     console.log(speak_response);
 
-    return AITuberResponse;
+    speak_aituber(speak_response);
+
+    return aituber_response;
+  };
+
+  // 음성 변환 API(VOICE VOX)
+  const VOICE_VOX_API_URL = 'http://localhost:50021';
+  const VOICEVOX_SPEAKER_ID = '8';
+  let audio = new Audio();
+
+  let speak_aituber = async (inputText) => {
+    audio.pause();
+    audio.currentTime = 0;
+    let tts_query = await new Promise((resolve, reject) => {
+      fetch(VOICE_VOX_API_URL + '/audio_query?speaker=' + VOICEVOX_SPEAKER_ID + '&text=' + encodeURI(inputText), {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+        .then((tts_query) => tts_query.json())
+        .then((query_json) => resolve(query_json))
+        .catch((error) => {
+          console.log('에러');
+          reject(`에러가 발생했습니다.:${error}`);
+        });
+    });
+    let response = await new Promise((resolve, reject) => {
+      fetch(VOICE_VOX_API_URL + '/synthesis?speaker=' + VOICEVOX_SPEAKER_ID + '&speedScale=2', {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(tts_query),
+      })
+        .then((response) => response.blob())
+        .then((blob) => {
+          console.log(blob);
+          resolve(blob);
+        })
+        .catch((error) => {
+          console.log('에러');
+          reject(`에러가 발생했습니다.:${error}`);
+        });
+    });
+    const audioSourceURL = window.URL || window.webkitURL;
+    audio = new Audio(audioSourceURL.createObjectURL(response));
+    // audio.onended = function () {
+    //   setTimeout(handleNewLiveCommentIfNeeded, 1000);
+    // };
+    audio.play();
   };
 
   // 임시 질문 입력 폼
