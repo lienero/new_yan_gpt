@@ -234,10 +234,20 @@ document.addEventListener('DOMContentLoaded', () => {
     retrieve_live_comments(liveChatId);
   };
 
+  // 임시 라이브 시작 폼
+  const start_btn = document.querySelector('.start_live');
+  console.log(start_btn);
+  start_btn.addEventListener('click', () => {
+    const form = document.querySelector('.start_form');
+    const video_id = document.querySelector('.video_id');
+    console.log(video_id.value);
+    // start_live(video_id.value);
+    form.style.display = 'none';
+  });
+
   // 임시 질문 입력 폼
-  const send = document.getElementById('send');
-  send.addEventListener('click', function () {
-    const form = document.getElementById('form');
+  const send_btn = document.getElementById('send');
+  send_btn.addEventListener('click', function () {
     const user = document.getElementById('user');
     const commnet = document.getElementById('comment');
     console.log(user.value);
