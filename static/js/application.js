@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const csrftoken = getCookie('csrftoken');
 
   // AITuber에게 답변 요청(임시)
-  let getAITuberResponse = async (user, comment) => {
+  let get_aituber_response = async (user, comment) => {
     let response = await new Promise((resolve, reject) => {
       fetch('/response/', {
         method: 'POST',
@@ -32,14 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }),
       })
         .then((res) => res.json())
-        .then((resJson) => {
-          console.log(resJson);
-          resolve(resJson);
-        })
-        .catch((error) => {
-          console.log('에러');
-          reject(`에러가 발생했습니다.:${error}`);
-        });
+        .then((res_json) => resolve(res_json))
+        .catch((error) => reject(`에러가 발생했습니다.:${error}`));
     });
     console.log(response);
     console.log(response.content);
@@ -47,19 +41,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const target = document.getElementById('aituber-response');
     target.innerHTML = aituber_response;
 
-    // 대답을 히라가나로 변환
-    const speak_response = korean_to_hiragana(aituber_response);
-
-    console.log(speak_response);
-
-    speak_aituber(speak_response);
-
     return aituber_response;
   };
 
   // 음성 변환 API(VOICE VOX)
   const VOICE_VOX_API_URL = 'http://localhost:50021';
-  const VOICEVOX_SPEAKER_ID = '63';
+  const VOICEVOX_SPEAKER_ID = '8';
   let audio = new Audio();
 
   let speak_aituber = async (inputText) => {
@@ -74,10 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
       })
         .then((tts_query) => tts_query.json())
         .then((query_json) => resolve(query_json))
-        .catch((error) => {
-          console.log('에러');
-          reject(`에러가 발생했습니다.:${error}`);
-        });
+        .catch((error) => reject(`에러가 발생했습니다.:${error}`));
     });
     let response = await new Promise((resolve, reject) => {
       fetch(VOICE_VOX_API_URL + '/synthesis?speaker=' + VOICEVOX_SPEAKER_ID + '&speedScale=2', {
@@ -88,21 +72,166 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify(tts_query),
       })
         .then((response) => response.blob())
-        .then((blob) => {
-          console.log(blob);
-          resolve(blob);
+        .then((blob) => resolve(blob))
+        .catch((error) => reject(`에러가 발생했습니다.:${error}`));
+    });
+    const audioSourceURL = window.URL || window.webkitURL;
+    audio = new Audio(audioSourceURL.createObjectURL(response));
+    audio.play();
+  };
+
+  // 유튜브 라이브 id 가져오기
+  const YOUTUBE_DATA_API_KEY = config.youtube_api_key;
+  const get_live_chat_id = async (YOUTUBE_VIDEO_ID) => {
+    const params = {
+      part: 'liveStreamingDetails',
+      id: YOUTUBE_VIDEO_ID,
+      key: YOUTUBE_DATA_API_KEY,
+    };
+    const query = new URLSearchParams(params);
+    const response = await new Promise((resolve, reject) => {
+      fetch(`https://youtube.googleapis.com/youtube/v3/videos?${query}`, {
+        method: 'get',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+        .then((res) => res.json())
+        .then((res_json) => {
+          console.log(res_json);
+          resolve(res_json);
         })
         .catch((error) => {
           console.log('에러');
           reject(`에러가 발생했습니다.:${error}`);
         });
     });
-    const audioSourceURL = window.URL || window.webkitURL;
-    audio = new Audio(audioSourceURL.createObjectURL(response));
-    // audio.onended = function () {
-    //   setTimeout(handleNewLiveCommentIfNeeded, 1000);
-    // };
-    audio.play();
+    if (response.items.length == 0) {
+      return '';
+    }
+    const live_chat_id = response.items[0].liveStreamingDetails.activeLiveChatId;
+    // return chat ID
+    console.log(live_chat_id);
+    return live_chat_id;
+  };
+
+  // 유튜브 라이브 채팅의 응답 및 추출
+  // 코멘트 습득 인터벌 (ms)
+  const INTERVAL_MILL_SECONDS_RETRIEVING_COMMENTS = 20000;
+  // 처리할 코멘트의 큐
+  let live_comment_queues = [];
+  // YouTube LIVE의 코멘트 습득 페이징
+  let next_page_token = '';
+
+  const retrieve_live_comments = async (active_live_chat_id) => {
+    let url =
+      'https://youtube.googleapis.com/youtube/v3/liveChat/messages?liveChatId=' +
+      active_live_chat_id +
+      '&part=authorDetails%2Csnippet&key=' +
+      YOUTUBE_DATA_API_KEY;
+    if (next_page_token !== '') {
+      url = url + '&pageToken=' + next_page_token;
+    }
+    const response = await new Promise((resolve, reject) => {
+      fetch(url, {
+        method: 'get',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+        .then((res) => res.json())
+        .then((res_json) => resolve(res_json))
+        .catch((error) => reject(`에러가 발생했습니다.:${error}`));
+    });
+    const items = response.items;
+    let index = 0;
+    let current_comments = [];
+    next_page_token = response.next_page_token;
+    items?.forEach((item) => {
+      try {
+        const user_name = item.authorDetails.displayName;
+        const user_icon_url = item.authorDetails.profileImageUrl;
+        let user_comment = '';
+        if (item.snippet.textMessageDetails != undefined) {
+          // 라이브채팅
+          user_comment = item.snippet.textMessageDetails.messageText;
+        }
+        if (item.snippet.superChatDetails != undefined) {
+          // 슈퍼챗
+          user_comment = item.snippet.superChatDetails.userComment;
+        }
+        const additional_comment = { user_name, user_icon_url, user_comment };
+        if (!live_comment_queues.includes(additional_comment) && user_comment != '') {
+          live_comment_queues.push(additional_comment);
+
+          // #이 붙어있는 코멘트는 제외
+          additional_comment.comment.includes('#') || current_comments.push(additional_comment);
+
+          // 유저 코멘트를 표시
+          let target = document.getElementById('user-comment-box');
+          // 코멘트등을 html 요소로 작성
+          const container = document.createElement('div');
+          container.classList.add('user-container');
+
+          const image_cropper = document.createElement('div');
+          image_cropper.classList.add('image-cropper');
+
+          const icon = document.createElement('img');
+          icon.classList.add('user-icon');
+          icon.setAttribute('src', additional_comment.user_icon_url);
+
+          const name = document.createElement('p');
+          name.classList.add('user-name');
+          name.textContent = additional_comment.user_name + '：';
+
+          const comment = document.createElement('p');
+          comment.classList.add('user-comment');
+          comment.textContent = additional_comment.user_comment;
+
+          // 요소를 html 추가
+          image_cropper.appendChild(icon);
+          container.appendChild(image_cropper);
+          container.appendChild(name);
+          container.appendChild(comment);
+          target.prepend(container);
+        }
+      } catch {
+        console.log('코멘트 습득 중 에러가 발생했습니다.');
+      }
+      index = index + 1;
+    });
+
+    // 아직 읽지않은 코멘트를 랜덤으로 선택
+    if (current_comments.length != 0) {
+      let { user_name, user_icon_url, user_comment } =
+        current_comments[Math.floor(Math.random() * current_comments.length)];
+      await new Promise((resolve, reject) => {
+        get_aituber_response(user_name, user_comment)
+          // 대답을 히라가나로 변환
+          .then((res) => korean_to_hiragana(res))
+          .then((speak_res) => {
+            console.log(speak_res);
+            speak_aituber(speak_res);
+            resolve(speak_res);
+          })
+          .catch((error) => reject(`에러가 발생했습니다.:${error}`));
+      });
+
+      let target = document.getElementById('question-box');
+      target.innerHTML = `${user_name} : ${user_comment}`;
+    }
+
+    console.log('live_comment_queues', live_comment_queues);
+
+    // 일정 간격으로 실행
+    setTimeout(retrieve_live_comments, INTERVAL_MILL_SECONDS_RETRIEVING_COMMENTS, active_live_chat_id);
+  };
+
+  // 라이브 시작
+  const start_live = async (YOUTUBE_VIDEO_ID) => {
+    const liveChatId = await get_live_chat_id(YOUTUBE_VIDEO_ID);
+    console.log(liveChatId);
+    retrieve_live_comments(liveChatId);
   };
 
   // 임시 질문 입력 폼
@@ -118,7 +247,20 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('id와 비번 잘 적어라');
       return false;
     } else {
-      getAITuberResponse(user.value, commnet.value);
+      const test_response = async () => {
+        await new Promise((resolve, reject) => {
+          get_aituber_response(user.value, commnet.value)
+            // 대답을 히라가나로 변환
+            .then((res) => korean_to_hiragana(res))
+            .then((speak_res) => {
+              console.log(speak_res);
+              speak_aituber(speak_res);
+              resolve(speak_res);
+            })
+            .catch((error) => reject(`에러가 발생했습니다.:${error}`));
+        });
+      };
+      test_response();
     }
   });
 
