@@ -15,7 +15,7 @@ services:
     command: /usr/sbin/nginx -g 'daemon off;' -c /etc/nginx/nginx.conf
   db:
     image: mysql:8.0.33
-    command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     environment:
       MYSQL_DATABASE: yangpt_aituber_app_db
       MYSQL_ROOT_PASSWORD: root

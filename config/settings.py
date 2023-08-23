@@ -85,7 +85,7 @@ DATABASES = {
         'HOST': os.environ['DATABASE_HOST'],
         # 포트를 3306으로 안하면 오류 발생
         'PORT': 3306,
-        'OPTIONS': {'charset': 'utf8mb4', },
+        'OPTIONS': {'charset': 'utf8mb4'},
     }
 }
 

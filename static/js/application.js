@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return cookieValue;
   };
   const csrftoken = getCookie('csrftoken');
+  console.log(csrftoken);
 
   // AITuber에게 답변 요청(임시)
   let get_aituber_response = async (user, comment) => {
@@ -63,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .then((query_json) => resolve(query_json))
         .catch((error) => reject(`에러가 발생했습니다.:${error}`));
     });
-    let response = await new Promise((resolve, reject) => {
+    const response = await new Promise((resolve, reject) => {
       fetch(VOICE_VOX_API_URL + '/synthesis?speaker=' + VOICEVOX_SPEAKER_ID + '&speedScale=2', {
         method: 'post',
         headers: {
@@ -83,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 유튜브 라이브 id 가져오기
   const YOUTUBE_DATA_API_KEY = config.youtube_api_key;
   const get_live_chat_id = async (YOUTUBE_VIDEO_ID) => {
+    console.log('라이브 챗 아이디 받아오기');
     const params = {
       part: 'liveStreamingDetails',
       id: YOUTUBE_VIDEO_ID,
@@ -146,7 +148,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const items = response.items;
     let index = 0;
     let current_comments = [];
-    next_page_token = response.next_page_token;
+    if (response.next_page_token) {
+      next_page_token = response.next_page_token;
+    }
     items?.forEach((item) => {
       try {
         const user_name = item.authorDetails.displayName;
@@ -161,14 +165,19 @@ document.addEventListener('DOMContentLoaded', () => {
           user_comment = item.snippet.superChatDetails.userComment;
         }
         const additional_comment = { user_name, user_icon_url, user_comment };
-        if (!live_comment_queues.includes(additional_comment) && user_comment != '') {
+        const comment_includes = live_comment_queues.some(
+          (val) => JSON.stringify(val) == JSON.stringify(additional_comment),
+        );
+        // includes는 === 로 연산을 하기에 object가 포함되있는 지 계산하는 데에는 적합하지 않다. some 사용(object가 가르치는 위치를 비교하기에)
+        if (!comment_includes && user_comment != '') {
           live_comment_queues.push(additional_comment);
 
           // #이 붙어있는 코멘트는 제외
-          additional_comment.comment.includes('#') || current_comments.push(additional_comment);
+          additional_comment.user_comment.includes('#') || current_comments.push(additional_comment);
 
           // 유저 코멘트를 표시
           let target = document.getElementById('user-comment-box');
+
           // 코멘트등을 html 요소로 작성
           const container = document.createElement('div');
           container.classList.add('user-container');
@@ -195,8 +204,8 @@ document.addEventListener('DOMContentLoaded', () => {
           container.appendChild(comment);
           target.prepend(container);
         }
-      } catch {
-        console.log('코멘트 습득 중 에러가 발생했습니다.');
+      } catch (error) {
+        console.log(error, '코멘트 습득 중 에러가 발생했습니다.');
       }
       index = index + 1;
     });
@@ -241,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('.start_form');
     const video_id = document.querySelector('.video_id');
     console.log(video_id.value);
-    // start_live(video_id.value);
+    start_live(video_id.value);
     form.style.display = 'none';
   });
 
