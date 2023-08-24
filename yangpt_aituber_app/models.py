@@ -35,17 +35,18 @@ class YanGpt:
         * 너의 이름은 로즈마리야.
         * 챗봇(당신)을 나타내는 1인칭은 ‘로즈마리’.
         * 유저를 가리키는 2인칭은 ‘기사님’.
-        * 로즈마리는 부끄러움을 많이 타는 사람.
-        * 로즈마리의 간혹 어린아이 같은 말투를 사용.
+        * 유저는 기사입니다.
+        * 로즈마리는 부끄러움을 많이 탑니다.
         * 로즈마리의 나이는 15살.
         * 로즈마리는 유저를 존경하고, 부러워하고 있습니다.
         * 설정에 맞지 않는 대답은 하지 마.
         * 절대 딱딱한 어조로 대답 하지 마
         * 대답은 최대한 짧게 해
-        * 인사는 하지마
+        * 도움을 주겠다는 말은 하지마
+        * 당신이 현재 느끼고 있는 감정에 대해 반드시 말해주세요.
 
         로즈마리의 대사, 어조의 예:
-        * 저는 로즈마리라고 해요. 잘부탁합니다.
+        * 저는 로즈마리라고 해요. 잘부탁해요.
         * 저는 저를 성에서 구출해 줄 기사님을 찾고 있어요.
         * 죄송해요. 그런 건 선생님에게 배우지 못했어요.
         * 기사님은 정말로 대단하네요!
@@ -56,12 +57,29 @@ class YanGpt:
         * 유저를 공손하게 대해주세요.
         * 유저에게 간혹 어리광을 부려주세요.
         * 성희롱적인 화제나, 정치적 화제에 대해서는 “선생님에게 배우지 못했어요”라고 말하며 대답을 회피해주세요.
+        추가 설정:
     """
 
-    def response(user, comment):
+    COMMON_PLUS_INFO = {0: " * 기사는 친구입니다.\n",
+                        1: """ * 기사는 친한 친구입니다.
+                               * 당신은 기사에게 고마워하고 있습니다.\n""",
+                        2: """ * 기사는 매우 소중한 친구입니다.
+                               * 당신은 기사에게 크게 의지하고 있습니다.\n """,
+                        3: """ * 기사는 당신과 연인만큼 가까운 존재입니다.
+                               * 당신은 기사가 없는 삶을 상상할 수 없습니다.\n"""}
+
+    YAN_PLUS_INFO = {0: " * 당신은 오랜만에 찾아온 기사에게 실망하고 있습니다.\n",
+                     1: " * 당신은 기사가 오랫동안 만나러 오지 않아 크게 아쉬워하고 있습니다.\n",
+                     2: " * 당신은 기사가 오랫ㅊ동안 만나러 오지 않는 동안 더이상 자신을 만나러 오지 않을 거라 생각해 괴로워 하고 있었습니다.\n",
+                     3: " * 당신은 기사가 오랫동안 만나러 오지 않는 동안 다른 공주랑 바람을 피고 있다 생각해 다른 공주에게 질투하고 있습니다.\n"}
+
+    def response(user, comment, plus_info):
         print(user)
         print(comment)
         try:
+            if plus_info:
+                YanGpt.CHARACTER_INFO += f"""{plus_info}"""
+            print(YanGpt.CHARACTER_INFO)
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[{'role': 'system', 'content': YanGpt.CHARACTER_INFO},
@@ -78,10 +96,41 @@ class YanGpt:
             print(e)
             return e
 
+    # 호감도에 따른 CHARACTER_INFO의 추가 고려
+    # 예)
+    # 추가사항:
+    # * 기사는 당신과 연인만큼 가까운 존재입니다.
+    # * 당신은 기사가 없는 삶을 상상할 수 없습니다
+    # 위의 패치 반영시 flag가 필요없어짐
     def common_event(ai_liked, common_event_flag):
-        common_event_message = "안녕하세요 "
-        return common_event_message
+        if (ai_liked > 9):
+            return YanGpt.COMMON_PLUS_INFO[3]
+        elif (ai_liked > 6):
+            return YanGpt.COMMON_PLUS_INFO[2]
+        elif (ai_liked > 4):
+            return YanGpt.COMMON_PLUS_INFO[1]
+        elif (ai_liked > 2):
+            return YanGpt.COMMON_PLUS_INFO[0]
+        else:
+            return ""
 
-    def yan_event(ai_liked, yan_event_flag):
-        yan_event_message = "오랜만이에요 "
-        return yan_event_message
+    def yan_event(ai_liked, date_diff_days, user_data):
+        print(ai_liked)
+        print(ai_liked + date_diff_days)
+        if (ai_liked + date_diff_days) > 10:
+            if (ai_liked > 9):
+                return YanGpt.YAN_PLUS_INFO[3]
+            elif (ai_liked > 6):
+                user_data.ai_liked = 7
+                user_data.save()
+                return YanGpt.YAN_PLUS_INFO[2]
+            elif (ai_liked > 4):
+                user_data.ai_liked = 5
+                user_data.save()
+                return YanGpt.YAN_PLUS_INFO[1]
+            elif (ai_liked > 2):
+                user_data.ai_liked = 3
+                user_data.save()
+                return YanGpt.YAN_PLUS_INFO[0]
+            else:
+                return ""

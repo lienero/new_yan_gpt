@@ -17,6 +17,7 @@ class YanGptAituberRV(View):
     model = User
 
     def post(self, request, **kwargs):
+        plus_info = ""
         response = ""
         data = json.loads(request.body)
         print(data)
@@ -29,19 +30,19 @@ class YanGptAituberRV(View):
             date_diff = (datetime.now().replace(
                 tzinfo=None) - user_data.updated_at.replace(tzinfo=None))
             if date_diff.days >= 1:
-                user_data.ai_liked += 1
+                if user_data.ai_liked < 10:
+                    user_data.ai_liked += 1
                 user_data.updated_at = datetime.now()
                 user_data.save()
-            yan_event = YanGpt.yan_event(
-                user_data.ai_liked, user_data.yan_event_flag)
             common_event = YanGpt.common_event(
                 user_data.ai_liked, user_data.common_event_flag)
+            yan_event = YanGpt.yan_event(
+                user_data.ai_liked, date_diff.days, user_data)
+            print(user_data.ai_liked)
+            if common_event:
+                plus_info += common_event
             if yan_event:
-                response += yan_event
-            elif common_event:
-                response += common_event
-            else:
-                response += f"안녕하세요. {user}기사님."
+                plus_info += yan_event
         else:
             print("생성")
             User.objects.create(name=user)
@@ -49,6 +50,6 @@ class YanGptAituberRV(View):
 
         print(data.get('comment'))
         response += YanGpt.response(
-            user, data.get('comment'))
+            user, data.get('comment'), plus_info)
         context = {'content': response}
         return JsonResponse(context)
