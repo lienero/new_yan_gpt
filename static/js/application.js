@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   // csrf 토큰 생성
+  // 쿠키 값이 null 일시 document.cookie = '' 로 초기화 한 뒤 하면 되는듯
   let getCookie = (name) => {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -36,8 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
         .then((res_json) => resolve(res_json))
         .catch((error) => reject(`에러가 발생했습니다.:${error}`));
     });
-    console.log(response);
-    console.log(response.content);
     const aituber_response = response.content;
     const target = document.getElementById('aituber-response');
     target.innerHTML = aituber_response;
@@ -100,7 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
       })
         .then((res) => res.json())
         .then((res_json) => {
-          console.log(res_json);
           resolve(res_json);
         })
         .catch((error) => {
@@ -113,7 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const live_chat_id = response.items[0].liveStreamingDetails.activeLiveChatId;
     // return chat ID
-    console.log(live_chat_id);
     return live_chat_id;
   };
 
@@ -219,7 +216,6 @@ document.addEventListener('DOMContentLoaded', () => {
           // 대답을 히라가나로 변환
           .then((res) => korean_to_hiragana(res))
           .then((speak_res) => {
-            console.log(speak_res);
             speak_aituber(speak_res);
             resolve(speak_res);
           })
@@ -239,19 +235,18 @@ document.addEventListener('DOMContentLoaded', () => {
   // 라이브 시작
   const start_live = async (YOUTUBE_VIDEO_ID) => {
     const liveChatId = await get_live_chat_id(YOUTUBE_VIDEO_ID);
-    console.log(liveChatId);
     retrieve_live_comments(liveChatId);
   };
 
   // 임시 라이브 시작 폼
   const start_btn = document.querySelector('.start_live');
-  console.log(start_btn);
   start_btn.addEventListener('click', () => {
     const form = document.querySelector('.start_form');
+    const test_form = document.querySelector('#form');
     const video_id = document.querySelector('.video_id');
-    console.log(video_id.value);
     start_live(video_id.value);
     form.style.display = 'none';
+    test_form.style.display = 'none';
   });
 
   // 임시 질문 입력 폼

@@ -74,12 +74,9 @@ class YanGpt:
                      3: " * 당신은 기사가 오랫동안 만나러 오지 않는 동안 다른 공주랑 바람을 피고 있다 생각해 다른 공주에게 질투하고 있습니다.\n"}
 
     def response(user, comment, plus_info):
-        print(user)
-        print(comment)
         try:
             if plus_info:
                 YanGpt.CHARACTER_INFO += f"""{plus_info}"""
-            print(YanGpt.CHARACTER_INFO)
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[{'role': 'system', 'content': YanGpt.CHARACTER_INFO},
@@ -88,8 +85,6 @@ class YanGpt:
                 n=1,
                 max_tokens=200,
             )
-            print(response)
-            print(response.choices[0].message["content"])
             response_message = f'{user}기사님 {response.choices[0].message["content"]}'
             return response_message
         except Exception as e:
@@ -115,8 +110,6 @@ class YanGpt:
             return ""
 
     def yan_event(ai_liked, date_diff_days, user_data):
-        print(ai_liked)
-        print(ai_liked + date_diff_days)
         if (ai_liked + date_diff_days) > 10:
             if (ai_liked > 9):
                 return YanGpt.YAN_PLUS_INFO[3]
