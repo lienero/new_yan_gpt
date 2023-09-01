@@ -254,8 +254,6 @@ document.addEventListener('DOMContentLoaded', () => {
   send_btn.addEventListener('click', function () {
     const user = document.getElementById('user');
     const commnet = document.getElementById('comment');
-    console.log(user.value);
-    console.log(commnet);
 
     if (user.value.trim() == '' || commnet.value.trim() == '') {
       alert('id와 비번 잘 적어라');
