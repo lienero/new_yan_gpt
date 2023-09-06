@@ -21,6 +21,39 @@ class User(models.Model):
         return self.name
 
 
+# 파인 튜닝을 위한 데이터 수집
+class Chat(models.Model):
+    chat = models.TextField('유저 채팅', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'chats'
+
+    def __str__(self):
+        return self.chat
+
+
+class AIResponse(models.Model):
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+    response = models.TextField('AI 답변', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'ai_response'
+
+    def __str__(self):
+        return self.response
+
+
+# 파인 튜닝 실행 일자 기록을 위한 로그
+class Fine_tuning_log(models.Model):
+    number_of_prompts = models.IntegerField('프롬프트 갯수')
+    created_at = models.DateTimeField('파인 튜닝 실행일', auto_now_add=True)
+
+    class Meta:
+        db_table = 'fine_tuning_logs'
+
+
 class YanGpt:
     CHARACTER_INFO = """
         당신은 챗봇으로써 이제부터 성에 갇혀있는 막내공주 역할을 연기합니다.
