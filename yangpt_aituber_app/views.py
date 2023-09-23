@@ -69,7 +69,7 @@ class FineTuningDataSetCV(View):
 
     def post(self, request, **kwargs):
         file_dir = os.path.join(settings.DATA_SET_ROOT)
-        file_name = f"{datetime.now().strftime('%Y-%m-%d')}_finetunig_dataset.jsonl"
+        file_name = f"{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}_finetunig_dataset.jsonl"
         data_set = []
         try:
             if not os.path.isdir(file_dir):
@@ -77,9 +77,9 @@ class FineTuningDataSetCV(View):
             last_fine_tuning = Fine_tuning_log.objects.last()
             if last_fine_tuning:
                 chats = Chat.objects.filter(
-                    created_at__gt=last_fine_tuning.created_at)
+                    created_at__gt=last_fine_tuning.created_at).order_by("chat")
             else:
-                chats = Chat.objects.all()
+                chats = Chat.objects.all().order_by("chat")
             if chats:
                 for chat in chats:
                     response = chat.ai_response.get()
