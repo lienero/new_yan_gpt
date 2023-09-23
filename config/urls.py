@@ -23,4 +23,6 @@ urlpatterns = [
     path('', yangpt_aituber_app.YanGptAituberIV.as_view(), name='index'),
     path('response/',
          yangpt_aituber_app.YanGptAituberRV.as_view(), name='response'),
+    path('dataset_create/', yangpt_aituber_app.FineTuningDataSetCV.as_view(),
+         name='dataset_create')
 ]

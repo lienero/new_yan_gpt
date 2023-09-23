@@ -1,5 +1,10 @@
+import os
+from django.conf import settings
 from django.db import transaction
 from django.shortcuts import render
+from django.contrib import messages
+from django.shortcuts import redirect
+from django.urls import reverse_lazy
 from django.views.generic import TemplateView, View
 from yangpt_aituber_app.models import User, YanGpt, Chat, AIResponse, Fine_tuning_log
 from datetime import datetime
@@ -56,3 +61,39 @@ class YanGptAituberRV(View):
             response = "통역 마법에 문제가 생겼습니다. 잠시 기다려주세요"
         context = {'content': response}
         return JsonResponse(context)
+
+
+class FineTuningDataSetCV(View):
+    def get_success_url(self):
+        return reverse_lazy('index')
+
+    def post(self, request, **kwargs):
+        file_dir = os.path.join(settings.DATA_SET_ROOT)
+        file_name = f"{datetime.now().strftime('%Y-%m-%d')}_finetunig_dataset.jsonl"
+        data_set = []
+        try:
+            if not os.path.isdir(file_dir):
+                os.makedirs(os.path.join(file_dir))
+            last_fine_tuning = Fine_tuning_log.objects.last()
+            if last_fine_tuning:
+                chats = Chat.objects.filter(
+                    created_at__gt=last_fine_tuning.created_at)
+            else:
+                chats = Chat.objects.all()
+            if chats:
+                for chat in chats:
+                    response = chat.ai_response.get()
+                    data = {"prompt": chat.chat,
+                            "completion": response.response}
+                    data_set.append(data)
+            if len(data_set) > 0:
+                with open(os.path.join(file_dir, file_name), encoding="utf-8", mode="w") as file:
+                    for i in data_set:
+                        file.write(json.dumps(i, ensure_ascii=False) + "\n")
+                Fine_tuning_log.objects.create(number_of_prompts=len(data_set))
+                messages.info(request, '데이터셋을 생성하였습니다.')
+            else:
+                messages.info(request, '이미 최신 데이터셋을 생성하였습니다.')
+            return redirect(self.get_success_url())
+        except Exception as e:
+            print('에러가 발생 했습니다.', e)

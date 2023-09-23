@@ -34,7 +34,8 @@ class Chat(models.Model):
 
 
 class AIResponse(models.Model):
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+    chat = models.ForeignKey(
+        Chat, on_delete=models.CASCADE, related_name='ai_response')
     response = models.TextField('AI 답변', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

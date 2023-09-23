@@ -160,5 +160,6 @@ cython_debug/
 #.idea/
 
 .local/
+data_sets/
 secret_key.py
 apikey.js
