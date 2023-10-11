@@ -83,8 +83,9 @@ class FineTuningDataSetCV(View):
             if chats:
                 for chat in chats:
                     response = chat.ai_response.get()
-                    data = {"prompt": chat.chat,
-                            "completion": response.response}
+                    data = {"messages": [{"role": "system", "content": "Rosemary is the youngest princess locked in a castle. Rosemary is looking for a knight to get you out of the castle."},
+                                         {"role": "user", "content": chat.chat},
+                                         {"role": "assistant", "content": response.response}]}
                     data_set.append(data)
             if len(data_set) > 0:
                 with open(os.path.join(file_dir, file_name), encoding="utf-8", mode="w") as file:
