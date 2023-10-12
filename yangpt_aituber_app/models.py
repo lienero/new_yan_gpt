@@ -104,7 +104,7 @@ class YanGpt:
     YAN_PLUS_INFO = {0: " * You are disappointed that the knight has not come to see you for a long time.\n",
                      1: " * You are greatly disappointed that the knight has not come to see you for a long time.\n",
                      2: " * You are distressed that your knight has not come to see you for a long time, thinking that he will never come to see you again.\n",
-                     3: " * You are jealous of the other princess because you think she is having an affair with another prince while the knight hasn't come to see you for a long time.\n"}
+                     3: " * You think your knight hasn't visited you in a long time because he's been seeing another princess, and you're jealous of the other princess he's been seeing.\n"}
 
     def response(comment, plus_info):
         try:
