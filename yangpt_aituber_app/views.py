@@ -46,17 +46,17 @@ class YanGptAituberRV(View):
                 plus_info += common_event
             if yan_event:
                 plus_info += yan_event
+            response += f'{user}기사님 '
         else:
-            print("생성")
             User.objects.create(name=user)
-            response += f"처음뵙겠습니다. {user}기사님. 저는 로즈마리에요. 잘 부탁해요."
+            response += f"처음뵙겠습니다. {user}기사님. "
         ai_response = YanGpt.response(data.get('comment'), plus_info)
         if ai_response:
             chats = Chat.objects.create(chat=data.get('comment'))
             AIResponse.objects.create(
                 chat=chats,
                 response=ai_response)
-            response += f'{user}기사님 {ai_response}'
+            response += ai_response
         else:
             response = "통역 마법에 문제가 생겼습니다. 잠시 기다려주세요"
         context = {'content': response}
