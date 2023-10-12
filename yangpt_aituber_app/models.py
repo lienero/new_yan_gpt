@@ -111,7 +111,7 @@ class YanGpt:
             if plus_info:
                 YanGpt.CHARACTER_INFO += f"""{plus_info}"""
             response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
+                model="ft:gpt-3.5-turbo-0613:personal::88Y9wd54",
                 messages=[{'role': 'system', 'content': YanGpt.CHARACTER_INFO},
                           {'role': 'user', 'content': comment}],
                 temperature=0.5,
