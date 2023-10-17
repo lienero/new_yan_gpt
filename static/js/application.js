@@ -80,6 +80,34 @@ document.addEventListener('DOMContentLoaded', () => {
     audio.play();
   };
 
+  // 음성 변환 API(VITS API)
+  const VITS_API_URL = 'http://localhost:23456';
+  const VITS_SPEAKER_ID = '2';
+
+  let vits_speak_aituber = async (inputText) => {
+    audio.pause();
+    audio.currentTime = 0;
+    const params = {
+      text: inputText,
+      id: VITS_SPEAKER_ID,
+    };
+    const query = new URLSearchParams(params);
+    const response = await new Promise((resolve, reject) => {
+      fetch(`${VITS_API_URL}/voice/vits?${query}`, {
+        method: 'get',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+        .then((response) => response.blob())
+        .then((blob) => resolve(blob))
+        .catch((error) => reject(`에러가 발생했습니다.:${error}`));
+    });
+    const audioSourceURL = window.URL || window.webkitURL;
+    audio = new Audio(audioSourceURL.createObjectURL(response));
+    audio.play();
+  };
+
   // 유튜브 라이브 id 가져오기
   const YOUTUBE_DATA_API_KEY = config.youtube_api_key;
   const get_live_chat_id = async (YOUTUBE_VIDEO_ID) => {
@@ -256,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const commnet = document.getElementById('comment');
 
     if (user.value.trim() == '' || commnet.value.trim() == '') {
-      alert('id와 비번 잘 적어라');
+      alert('공백은 전달할 수 없습니다.');
       return false;
     } else {
       const test_response = async () => {
@@ -274,6 +302,15 @@ document.addEventListener('DOMContentLoaded', () => {
       };
       test_response();
     }
+  });
+
+  // 임시 음성 재생 폼
+  const voice_test_btn = document.getElementById('voice_test_btn');
+  console.log(voice_test_btn);
+  voice_test_btn.addEventListener('click', function () {
+    console.log('테스트 실행');
+    let test_message = '안녕하세요. 기사님. 저는 로즈마리에요. 잘 부탁해요';
+    vits_speak_aituber(test_message);
   });
 
   // 한글을 히라가나로 변환시키는 기능
