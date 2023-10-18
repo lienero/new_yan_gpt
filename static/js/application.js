@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let live_comment_queues = [];
   // YouTube LIVE의 코멘트 습득 페이징
   let next_page_token = '';
-
+  // 유튜브 라이브 채팅의 응답 및 추출 함수
   const retrieve_live_comments = async (active_live_chat_id) => {
     let url =
       'https://youtube.googleapis.com/youtube/v3/liveChat/messages?liveChatId=' +
@@ -241,8 +241,10 @@ document.addEventListener('DOMContentLoaded', () => {
         current_comments[Math.floor(Math.random() * current_comments.length)];
       await new Promise((resolve, reject) => {
         get_aituber_response(user_name, user_comment)
+          // 숫자를 한글로 변환
+          .then((res) => number_to_korean(res))
           // 대답을 히라가나로 변환
-          .then((res) => korean_to_hiragana(res))
+          .then((korean_res) => korean_to_hiragana(korean_res))
           .then((speak_res) => {
             speak_aituber(speak_res);
             resolve(speak_res);
@@ -266,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
     retrieve_live_comments(liveChatId);
   };
 
-  // 임시 라이브 시작 폼
+  // 라이브 시작 폼
   const start_btn = document.querySelector('.start_live');
   start_btn.addEventListener('click', () => {
     const form = document.querySelector('.start_form');
@@ -290,8 +292,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const test_response = async () => {
         await new Promise((resolve, reject) => {
           get_aituber_response(user.value, commnet.value)
+            // 숫자를 한글로 변환
+            .then((res) => number_to_korean(res))
             // 대답을 히라가나로 변환
-            .then((res) => korean_to_hiragana(res))
+            .then((korean_res) => korean_to_hiragana(korean_res))
             .then((speak_res) => {
               console.log(speak_res);
               speak_aituber(speak_res);
@@ -304,14 +308,66 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 임시 음성 재생 폼
+  // vits ai voice 테스트용 임시 음성 재생 폼
   const voice_test_btn = document.getElementById('voice_test_btn');
-  console.log(voice_test_btn);
   voice_test_btn.addEventListener('click', function () {
     console.log('테스트 실행');
     let test_message = '안녕하세요. 기사님. 저는 로즈마리에요. 잘 부탁해요';
     vits_speak_aituber(test_message);
   });
+
+  // 숫자를 한글발음으로 변환시키는 기능
+  // 숫자 한글발음 사전
+  const DIGITS = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+  const UNITS = [
+    '',
+    '십',
+    '백',
+    '천',
+    '만',
+    '십만',
+    '백만',
+    '천만',
+    '억',
+    '십억',
+    '백억',
+    '천억',
+    '조',
+    '십조',
+    '백조',
+    '천조',
+  ];
+  const number_pattern = /[0-9]/; //숫자 정규식
+  // 숫자를 한글 발음으로 바꾸는 함수
+  let number_to_korean = (string_with_num) => {
+    if (number_pattern.test(string_with_num)) {
+      let result = '';
+      let nums = string_with_num.match(/\d+/g);
+      nums?.forEach((num) => {
+        let num_len = num.length;
+        for (let i = 0; i < num_len; i++) {
+          let digit = parseInt(num.charAt(i));
+          let unit = UNITS[num_len - i - 1]; // i번째 자릿수 단위
+
+          // 일의 자리인 경우에는 숫자를 그대로 한글로 변환
+          if (i === num_len - 1 && digit === 1 && num_len !== 1) {
+            result += '일';
+          } else if (digit !== 0) {
+            // 일의 자리가 아니거나 숫자가 0이 아닐 경우
+            result += DIGITS[digit] + unit;
+          } else if (i === num_len - 5) {
+            // 십만 단위에서는 '만'을 붙이지 않습니다.
+            result += '만';
+          }
+        }
+        console.log(num);
+        console.log(result);
+        string_with_num = string_with_num.replace(num, result);
+      });
+      console.log(string_with_num);
+    }
+    return string_with_num;
+  };
 
   // 한글을 히라가나로 변환시키는 기능
   // 일본어 자모 조합 리스트
@@ -731,29 +787,37 @@ document.addEventListener('DOMContentLoaded', () => {
    * @return {string}
    */
 
+  const korean_pattern = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/; //한글 정규식
+
+  // 한글을 히라가나로 바꾸는 함수
   let korean_to_hiragana = (korean) => {
-    return korean
-      .split('')
-      .map((char) => {
-        if (char) {
-          const consIndex = get_kr_index_consonant(char);
-          const vowelIndex = get_kr_index_vowel(char);
-          if (consIndex !== null && vowelIndex !== null) {
-            const badchimIndex = get_kr_index_badchim(char);
-            return `${JP_WORD_TABLE[consIndex][vowelIndex]}${badchimIndex ? JP_BADCHIM_TABLE[badchimIndex] : ''}`;
-          } else if (char === '-') {
-            return 'ー';
-          } else if (char === ' ' || char === ',') {
-            return '\\';
-          } else if (char === '.') {
-            return '。';
+    if (korean_pattern.test(korean)) {
+      korean = korean
+        .split('')
+        .map((char) => {
+          if (char) {
+            if (number_pattern.test(char)) {
+            }
+            const consIndex = get_kr_index_consonant(char);
+            const vowelIndex = get_kr_index_vowel(char);
+            if (consIndex !== null && vowelIndex !== null) {
+              const badchimIndex = get_kr_index_badchim(char);
+              return `${JP_WORD_TABLE[consIndex][vowelIndex]}${badchimIndex ? JP_BADCHIM_TABLE[badchimIndex] : ''}`;
+            } else if (char === '-') {
+              return 'ー';
+            } else if (char === ' ' || char === ',') {
+              return '\\';
+            } else if (char === '.') {
+              return '。';
+            } else {
+              return char;
+            }
           } else {
-            return char;
+            return null;
           }
-        } else {
-          return null;
-        }
-      })
-      .join('');
+        })
+        .join('');
+    }
+    return korean;
   };
 });
