@@ -149,6 +149,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let live_comment_queues = [];
   // YouTube LIVE의 코멘트 습득 페이징
   let next_page_token = '';
+  // 코멘트 없을 경우의 카운트
+  let none_comment_count = 0;
   // 유튜브 라이브 채팅의 응답 및 추출 함수
   const retrieve_live_comments = async (active_live_chat_id) => {
     let url =
@@ -254,6 +256,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
       let target = document.getElementById('question-box');
       target.innerHTML = `${user_name} : ${user_comment}`;
+    } else {
+      none_comment_count = none_comment_count + 1;
+      console.log(none_comment_count);
+      if (none_comment_count > 3) {
+        none_comment_count = 0;
+        await new Promise((resolve, reject) => {
+          get_aituber_response(' ', '짧은 토막상식을 말해줘')
+            // 숫자를 한글로 변환
+            .then((res) => number_to_korean(res))
+            // 대답을 히라가나로 변환
+            .then((korean_res) => korean_to_hiragana(korean_res))
+            .then((speak_res) => {
+              speak_aituber(speak_res);
+              resolve(speak_res);
+            })
+            .catch((error) => reject(`에러가 발생했습니다.:${error}`));
+        });
+      }
     }
 
     console.log('live_comment_queues', live_comment_queues);
@@ -273,10 +293,14 @@ document.addEventListener('DOMContentLoaded', () => {
   start_btn.addEventListener('click', () => {
     const form = document.querySelector('.start_form');
     const test_form = document.querySelector('#form');
+    const voice_form = document.querySelector('.voice_form');
+    const dataset_form = document.querySelector('.dataset_form');
     const video_id = document.querySelector('.video_id');
     start_live(video_id.value);
     form.style.display = 'none';
     test_form.style.display = 'none';
+    voice_form.style.display = 'none';
+    dataset_form.style.display = 'none';
   });
 
   // 임시 질문 입력 폼

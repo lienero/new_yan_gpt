@@ -8,7 +8,7 @@
   </div>
   <div id="question-box">
     <h2 id="question-from-user">
-      <form action="{% url 'dataset_create'%}" method="post" onsubmit="return confirm('파인튜닝 데이터셋를 생성하시겠습니까?')">
+      <form action="{% url 'dataset_create'%}" method="post" class="dataset_form" onsubmit="return confirm('파인튜닝 데이터셋를 생성하시겠습니까?')">
         {% csrf_token %}
         <input type="submit" value="데이터셋 생성">
       </form>
