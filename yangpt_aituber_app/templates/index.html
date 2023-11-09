@@ -8,11 +8,11 @@
   </div>
   <div id="question-box">
     <h2 id="question-from-user">
-      <form action="{% url 'dataset_create'%}" method="post" class="dataset_form" onsubmit="return confirm('파인튜닝 데이터셋를 생성하시겠습니까?')">
+      <form action="{% url 'dataset_create'%}" method="post" class="dataset_form hide_form" onsubmit="return confirm('파인튜닝 데이터셋를 생성하시겠습니까?')">
         {% csrf_token %}
         <input type="submit" value="데이터셋 생성">
       </form>
-      <form method="get" id="form" onsubmit="return false;">
+      <form method="get" id="form" class="hide_form" onsubmit="return false;">
         아이디 :
         <input type="text" name="" id="user"><br>
         코멘트 :
@@ -20,12 +20,12 @@
         <button id="send">전송</button>
       </form>
       <br>
-      <form method="get" class="start_form" onsubmit="return false;">
+      <form method="get" class="start_form hide_form" onsubmit="return false;">
         비디오ID :
         <input type="text" name="" class="video_id">
         <button class="start_live">방송 시작</button>
       </form>
-      <form method="get" class="voice_form" onsubmit="return false;">
+      <form method="get" class="voice_form hide_form" onsubmit="return false;">
         <button id="voice_test_btn">음성 재생</button>
       </form>
     </h2>

@@ -111,7 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // 유튜브 라이브 id 가져오기
   const YOUTUBE_DATA_API_KEY = config.youtube_api_key;
   const get_live_chat_id = async (YOUTUBE_VIDEO_ID) => {
-    console.log('라이브 챗 아이디 받아오기');
     const params = {
       part: 'liveStreamingDetails',
       id: YOUTUBE_VIDEO_ID,
@@ -291,16 +290,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // 라이브 시작 폼
   const start_btn = document.querySelector('.start_live');
   start_btn.addEventListener('click', () => {
-    const form = document.querySelector('.start_form');
-    const test_form = document.querySelector('#form');
-    const voice_form = document.querySelector('.voice_form');
-    const dataset_form = document.querySelector('.dataset_form');
+    const hide_forms = document.querySelectorAll('.hide_form');
     const video_id = document.querySelector('.video_id');
     start_live(video_id.value);
-    form.style.display = 'none';
-    test_form.style.display = 'none';
-    voice_form.style.display = 'none';
-    dataset_form.style.display = 'none';
+    hide_forms.forEach((hide_form) => {
+      hide_form.style.display = 'none';
+    });
   });
 
   // 임시 질문 입력 폼
