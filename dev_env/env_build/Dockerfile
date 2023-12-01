@@ -7,7 +7,12 @@ ENV HOME /app/work
 ARG USER=root
 ARG UID=0
 
-RUN apt update
+RUN apt update &&\
+    curl -sL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt install nodejs && \
+    apt install -y build-essential mariadb-client default-libmysqlclient-dev && \
+    apt install -y curl apt-transport-https wget && \
+    apt-get update && apt-get install -y vim
 
 WORKDIR /app/work/
 

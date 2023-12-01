@@ -12,6 +12,8 @@ init: .env
 	docker-compose up -d --build
 	docker-compose exec env pipenv install --dev --system
 	docker-compose exec env pip install -e .
+	docker-compose exec env npm install
+	docker-compose exec env npm update
 	docker-compose exec env python manage.py makemigrations
 	docker-compose exec env python manage.py migrate
 

@@ -163,3 +163,7 @@ cython_debug/
 data_sets/
 secret_key.py
 apikey.js
+
+# npm
+/node_modules
+.npm
