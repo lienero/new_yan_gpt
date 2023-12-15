@@ -20,3 +20,5 @@ init: .env
 run: .env
 	docker-compose exec env bash -c "gunicorn --bind 0.0.0.0:8000 config.wsgi:application"
 
+tsc: .env
+	docker-compose exec env bash -c "cd static/js && npx tsc application.ts --target ES2022"
