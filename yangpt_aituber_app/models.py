@@ -105,7 +105,9 @@ class YanGpt:
             if plus_info:
                 YanGpt.CHARACTER_INFO += f"""{plus_info}"""
             response = openai.ChatCompletion.create(
-                model="ft:gpt-3.5-turbo-0613:personal::88Y9wd54",
+                # 데이터셋의 부족으로 인해 파인튜닝 모델 사용 임시 중지
+                model="gpt-3.5-turbo",
+                # model="ft:gpt-3.5-turbo-0613:personal::88Y9wd54",
                 messages=[{'role': 'system', 'content': YanGpt.CHARACTER_INFO},
                           {'role': 'user', 'content': comment}],
                 temperature=0.5,
@@ -118,12 +120,7 @@ class YanGpt:
             print(e)
             return e
 
-    # 호감도에 따른 CHARACTER_INFO의 추가 고려
-    # 예)
-    # 추가사항:
-    # * 기사는 당신과 연인만큼 가까운 존재입니다.
-    # * 당신은 기사가 없는 삶을 상상할 수 없습니다
-    # 위의 패치 반영시 flag가 필요없어짐
+    # 호감도에 따른 CHARACTER_INFO의 추가
     def common_event(ai_liked, common_event_flag):
         if (ai_liked > 9):
             return YanGpt.COMMON_PLUS_INFO[3]
