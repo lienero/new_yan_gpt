@@ -289,10 +289,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // 숫자를 한글로 변환
             .then((res) => number_to_korean(res))
             // 대답을 히라가나로 변환
-            .then((korean_res) => korean_to_hiragana(korean_res))
+            // .then((korean_res) => korean_to_hiragana(korean_res))
             .then((speak_res) => {
               console.log(speak_res);
-              speak_aituber(speak_res);
+              // speak_aituber(speak_res);
+              vits_speak_aituber(speak_res);
               resolve(speak_res);
             })
             .catch((error) => reject(`에러가 발생했습니다.:${error}`));

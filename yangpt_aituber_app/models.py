@@ -104,9 +104,9 @@ class YanGpt:
         try:
             if plus_info:
                 YanGpt.CHARACTER_INFO += f"""{plus_info}"""
-            response = openai.ChatCompletion.create(
+            response = openai.chat.completions.create(
                 # 데이터셋의 부족으로 인해 파인튜닝 모델 사용 임시 중지
-                model="gpt-3.5-turbo",
+                model="gpt-4o-mini",
                 # model="ft:gpt-3.5-turbo-0613:personal::88Y9wd54",
                 messages=[{'role': 'system', 'content': YanGpt.CHARACTER_INFO},
                           {'role': 'user', 'content': comment}],
@@ -115,7 +115,7 @@ class YanGpt:
                 max_tokens=200,
             )
             print(response)
-            return response.choices[0].message["content"]
+            return response.choices[0].message.content
         except Exception as e:
             print(e)
             return e
